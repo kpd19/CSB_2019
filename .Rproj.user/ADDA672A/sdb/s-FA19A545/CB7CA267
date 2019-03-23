@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "###############################\n#                             #\n#      TEST DATA FILE         #\n#         KP Dixon            #\n#         CSB 2019            #\n#                             #\n###############################\n\n\nrm(list=ls())\n\nsource(\"Functions.R\")\n\n# reads in the data\ndat <- read_csv(\"Datasets/Leavenworth_daily_CSB.csv\")\n\n# takes a look at the dataframe\nglimpse(dat)\n\n# find the sitename from the datafile, used in functions to plot with name\nsitename <- tolower(strsplit(unique(dat$NAME), \" \")[[1]][1])\nsitename <- firstup(sitename)\n\n# add some information about months and years\ndat$month <- format(dat$DATE, \"%b\")\ndat$year <- as.numeric(format(dat$DATE,\"%Y\"))\n\n# filter for years with only greater than 320 days of info\ngood_years <- dat %>% group_by(year) %>% summarize(numdays = n()) %>% filter(numdays >320) %>% select(year)\ndat <- dat %>% filter(year %in% good_years$year)\n# dat %>% group_by(year) %>% summarize(numdays = n()) %>% ggplot() + aes(x=year, y= numdays) + geom_line(color=\"dark green\")\n\n# set some global parameters for the dataset\nmin_date <- min(dat$year)\nmax_date <- max(dat$year)\n\nDFTM_threshold <- 42 # the degree threshold for Douglas Fir Tussock Moths (DFTM)\nDFTM_target <- 440 # the number of degree days for DFTM to start hatching\n\n# plots the value for each day over time\n# timeA is the lowest year and timeB is the highest year\n# options are whichever columns data is available for e.g. TMAX, TMIN, SNWD (snowdepth), SNOW (snowfall)\n# changing the metric value changes the xaxis label\n# can print using sitename in the filename\nvar1 <- \"TMAX\"\nmetric1 <- \"Temp Max\"\npdf(paste0(\"Plots/\", var1, \"_\", sitename, \".pdf\"))\nplot_over_time(data = dat, timeA=min_date, timeB=max_date, var = var1, metric = metric1)\ndev.off()\n\n# plot that finds the TMAX for each year and plots it\nTMAX_over_time(data = dat, timeA=min_date, timeB=max_date)\n\n# plot that finds the TMAX for each year and plots it\nTMIN_over_time(data = dat, timeA=min_date, timeB=max_date)\n\n# plots both TMAX and TMIN for year year over time\nEXTREMES_over_time(data = dat, timeA=min_date, timeB=max_date)\n\n# finds the last date with no snow on the ground\nlast_no_snow(dataset = dat, timeA=min_date, timeB = max_date)\n\n# finds when the snow melts\n# issue with finding it in January when there hasn't been a big snowfall yet\nearliest_no_snow(dataset = dat, timeA=min_date, timeB = max_date)\n\n# finds cumulative snowfall for the year\ncumulative_snow(dataset = dat, timeA=min_date, timeB = max_date)\n\n# function that finds number of degree days over time using another function\n# uses threshold for degree days and calculates a value for each day\n# finds how many julian days in a year it takes to get to a given threshold\n# you can choose to plot and return values of mean and variance over the time or just to plot\nplot_mod <- degree_days_time(dataset = dat, timeA = min_date, timeB = max_date, threshold = DFTM_threshold, target = DFTM_target, PLOT = TRUE)\ndegree_days_mean <- as.numeric(plot_mod[1])\ndegree_days_var <- as.numeric(plot_mod[2])\n\nprint(degree_days_mean)\nprint(degree_days_var)\n\n\n# choose between var2 = \"d_days\" (shows how much each day gives) and var2 = \"cumulative\"\n\nvar2 <- \"cumulative\"\npdf(paste0(\"Plots/\", var2, \"_\", sitename, \".pdf\"))\nplot_degree_days(dataset=dat, timeA = 2005, threshold = DFTM_threshold, target = DFTM_target, var = var2)\ndev.off()\n\n",
+    "created" : 1553210100921.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3646511050",
+    "id" : "CB7CA267",
+    "lastKnownWriteTime" : 1553371554,
+    "last_content_update" : 1553371554656,
+    "path" : "~/Documents/StuffINeed/_Classes/ScienceComputing/Data/Data_testing.R",
+    "project_path" : "Data_testing.R",
+    "properties" : {
+        "tempName" : "Untitled3"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

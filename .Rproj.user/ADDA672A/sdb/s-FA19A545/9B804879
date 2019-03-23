@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "###############################\n#                             #\n#      PREDICTIONS FOR        #\n#       DEGREE DAYS           #\n#         KP Dixon            #\n#         CSB 2019            #\n#                             #\n###############################\n\n\nrm(list=ls())\n\nsource(\"Functions.R\")\n\n# set some global parameters for the dataset\nDFTM_threshold <- 42 # the degree threshold for Douglas Fir Tussock Moths (DFTM)\nDFTM_target <- 440 # the number of degree days for DFTM to start hatching\n\n\nfile.dir <- \"Datasets/\"\n\n# 4. loads filenames form directory\nfiles <- c(list.files(file.dir, pattern = \".csv\"))\nlength(files)\n\nsites <- c()\nmeans <- c()\nvar <- c()\n\nfor (i in 1:length(files)){\n  filename <- paste(file.dir, files[i], sep=\"/\")\n  dat <- read_csv(filename) #, col_types=list(DATE = col_date()))\n  \n  sitename <- tolower(strsplit(unique(dat$NAME), \" \")[[1]][1])\n  sitename <- firstup(sitename)\n  \n  dat$month <- format(dat$DATE, \"%b\")\n  dat$year <- as.numeric(format(dat$DATE,\"%Y\"))\n  \n  good_years <- dat %>% group_by(year) %>% summarize(numdays = n()) %>% filter(numdays >320) %>% select(year)\n  dat <- dat %>% filter(year %in% good_years$year)\n  \n  plot_mod <- degree_days_time(dataset = dat, threshold = DFTM_threshold, target = DFTM_target, site = sitename, PLOT = FALSE)\n  degree_days_mean <- as.numeric(plot_mod[1])\n  degree_days_var <- as.numeric(plot_mod[2])\n  \n  \n  sites <- c(sites, sitename)\n  means <- c(means, degree_days_mean)\n  var <- c(var, degree_days_var)\n  \n  \n}\n\n# rounding the mean and calculated the standard deviations from the data\nmeans <- round(means)\nsd <- sqrt(var)\nsd <- round(sd)\n\n# translating the julian days into dates\ndate_means <- as.Date(means, origin=as.Date(\"2019-01-01\"))\nsd_upper <- as.Date(means+sd, origin = as.Date(\"2019-01-01\"))\nsd_lower <- as.Date(means-sd, origin = as.Date(\"2019-01-01\"))\n\n\nplt <- ggplot() + aes(x=sites, y=date_means) + \n  geom_point( color=\"black\") +\n  geom_errorbar(aes(ymin=sd_lower, ymax=sd_upper), width=.2) + \n  labs(title = paste0(\"Predictions for when \", DFTM_target, \" degree days is reached\"),\n       y = \"Date\",\n       x = \"Sites\") + theme_bw(base_size = 15)\n\n\npdf(\"Plots/2019Pred.pdf\")\nprint(plt)  \ndev.off()\n\n",
+    "created" : 1553205857540.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3839438933",
+    "id" : "9B804879",
+    "lastKnownWriteTime" : 1553371172,
+    "last_content_update" : 1553371183813,
+    "path" : "~/Documents/StuffINeed/_Classes/ScienceComputing/Data/Predictions_2019.R",
+    "project_path" : "Predictions_2019.R",
+    "properties" : {
+        "tempName" : "Untitled2"
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
